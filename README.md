@@ -22,5 +22,6 @@ Username: user
 Password: password
 
 La relazione dell'elaborato "Relazione_Reti_Web server.pdf" si trova 
-all'interno della cartella "Ospedale Pasini".
+
+all'interno della cartella "Ospedale_Pasini".
 
