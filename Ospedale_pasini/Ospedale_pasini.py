@@ -10,12 +10,9 @@ import sys,signal
 import socketserver
 import threading
 
-#manage the wait witout busy waiting
+#evita il "busy waiting"
 waiting_refresh = threading.Event()
-
-# primi articoli di ogni testata
-first_articles = [] 
-
+ 
 
 # Legge il numero della porta dalla riga di comando
 if sys.argv[1:]:
@@ -36,11 +33,11 @@ class ServerHandler(http.server.SimpleHTTPRequestHandler):
             self.path = '/'
         http.server.SimpleHTTPRequestHandler.do_GET(self)
         
-# ThreadingTCPServer per gestire più richieste
+# ThreadingTCPServer per gestire più richieste (multithreading)
 server = socketserver.ThreadingTCPServer(('127.0.0.1',port), ServerHandler)
 
 #-----------
-# la parte iniziale è identica per tutti i giornali
+# la parte iniziale è identica per tutti i servizi
 header_html = """
 <html>
     <head>
@@ -92,7 +89,7 @@ header_html = """
         <title>Pasini's ASL</title>
 """
 
-# la barra di navigazione è identica per tutti i giornali
+# la barra di navigazione presente nel sito web
 navigation_bar = """
         <br>
         <br>
@@ -112,7 +109,7 @@ navigation_bar = """
         <table align="center">
 """.format(port=port)
 
-
+#la parte finale, uguale per tutti i serivizi
 footer_html = """
         </table>
     </body>
@@ -120,7 +117,7 @@ footer_html = """
 """
 
 
-#la parte finale per la pagina pronto soccorso
+#la parte finale per la pagina del "green pass"
 end_page_green_pass= """
         <br><br>
 		<form action="http://127.0.0.1:{port}/green_pass" method="post" style="text-align: center;">
@@ -147,13 +144,14 @@ end_page_green_pass= """
     </body>
 </html>
 """.format(port=port)
-
+#la parte finale per la pagina del pronto soccorso
 end_page_ps= """
         <br><br>
 		<form action="http://127.0.0.1:{port}/pronto_soccorso" method="post" style="text-align: center;">
         		  <img src='images/ps.png'/ width="100" height="100">
 
-    		 <h1>Come funziona il pronto soccorso: il triage e i codici</h1>
+    		 <h1>Come funziona il pronto soccorso: il triage e i codici</h1><br>
+             <br>
              Lo scopo del triage e' proprio quello di valutare la gravita' della patologia della persona arrivata al pronto soccorso e assegnargli un codice, che consentira' ai medici di prestare le cure in modo efficace e di procedere con il ricovero ospedaliero quando e se necessario.
 
             <h2>La priorita' dell'intervento viene indicata, come e' noto, con una gamma di colori:</h2>
@@ -169,7 +167,7 @@ end_page_ps= """
     </body>
 </html>
 """.format(port=port)
-
+#la parte finale per la pagina del fascicolo sanitario
 end_page_fs= """
         <br><br>
 		<form action="http://127.0.0.1:{port}/fascicolo_sanitario" method="post" style="text-align: center;">
@@ -190,7 +188,7 @@ end_page_fs= """
     </body>
 </html>
 """.format(port=port)
-
+#la parte finale per la pagina del CupWeb
 end_page_CupWeb= """
         <br><br>
         <img src='images/cup.png'/ width="100" height="100"align="right">
@@ -198,20 +196,20 @@ end_page_CupWeb= """
 		<form action="http://127.0.0.1:{port}/pronto_soccorso" method="post" style="text-align: center;">
 		 <h1>Prenotazioni online di visite ed esami specialistici</h1><br><br>
  
-<h2>CUPWeb è il sistema di prenotazione e disdetta online delle prestazioni specialistiche della Regione Emilia-Romagna.
-Ad oggi è possibile prenotare le visite e gli esami maggiormente richiesti per il Servizio Sanitario Regionale e per la Libera Professione.<br>
+<h2>CUPWeb e' il sistema di prenotazione e disdetta online delle prestazioni specialistiche della Regione Emilia-Romagna.<br>
+Ad oggi e' possibile prenotare le visite e gli esami maggiormente richiesti per il Servizio Sanitario Regionale e per la Libera Professione.<br><br><br>
 
 SENZA AUTENTICAZIONE PUOI:</h2><br>
 
-<p>disdire gli appuntamenti prenotati tramite CUPWeb, sportello CUP/farmacia o Numero Verde
-pagare gli appuntamenti prenotati<br>
-<h2>SE TI AUTENTICHI PUOI ANCHE:<h2><br>
+<p>Disdire gli appuntamenti prenotati tramite CUPWeb, sportello CUP/farmacia o Numero Verde<br>
+Pagare gli appuntamenti prenotati<br>
+<h2>SE TI AUTENTICHI PUOI ANCHE:</h2><br>
 
-prenotare una o più impegnative in SSN e libera professione<br>
-modificare uno o più appuntamenti prenotati tramite CUPWeb, sportello CUP/farmacia o Numero Verde<br>
-visualizzare le prenotazioni sino alla data fissata<br>
-ristampare il promemoria dell'appuntamento e dell'eventuale costo della prestazione prenotata.<br>
-<a href="https://support.fascicolo-sanitario.it/guida/accedi-al-tuo-fse"><p>Per maggiori informazioni sulle modalità di accesso<br></p></a>
+<p>Prenotare una o piu' impegnative in SSN e libera professione<br>
+Modificare uno o piu' appuntamenti prenotati tramite CUPWeb, sportello CUP/farmacia o Numero Verde<br>
+Visualizzare le prenotazioni sino alla data fissata<br>
+Ristampare il promemoria dell'appuntamento e dell'eventuale costo della prestazione prenotata.<br>
+<a href="https://support.fascicolo-sanitario.it/guida/accedi-al-tuo-fse"><p>Per maggiori informazioni sulle modalita' di accesso<br></p></a>
 
 
 		</form>
@@ -285,13 +283,14 @@ def resfresh_contents():
     create_page_prenotazione_vaccino()
     create_page_pronto_soccorso()
     create_page_fascicolo_sanitario()
+    create_page_Cup_Web()
     print("finished update")
     
 # creazione della pagina specifica per prenotare il vaccino
 def create_page_prenotazione_vaccino():
     create_page_servizio("<h1>Prenotazione vaccino</h1>"  , 'vaccino.html', end_page_vaccino )
     
-# creazione della pagina specifica del FSE
+# creazione della pagina specifica del green pass
 def create_page_green_pass():
     create_page_servizio("<h1>Informazioni green pass</h1>", 'green_pass.html', end_page_green_pass )
     
@@ -299,14 +298,14 @@ def create_page_green_pass():
 # contenente pagina principale del Azienda ospedaliera
 def create_index_page():
     create_page_servizio("<h1>Elaborato Pasini</h1>", 'index.html', end_page_index )
-    
+# creazione della pagina specifica del pronto soccorso
 def create_page_pronto_soccorso():
     create_page_servizio("<h1>Pronto soccorso</h1>",'pronto_soccorso.html',end_page_ps)
-    
+# creazione della pagina specifica del fascicolo sanitario
 def create_page_fascicolo_sanitario():
     create_page_servizio("<h1>Fascicolo Sanitario</h1>",'fascicolo_sanitario.html',end_page_fs)
-    
-def create_page_fascicolo_sanitario():
+# creazione della pagina specifica del cup web
+def create_page_Cup_Web():
     create_page_servizio("<h1>CupWeb</h1>",'CupWeb.html',end_page_CupWeb)
     
 """ 
@@ -346,8 +345,7 @@ def create_page_servizio(title,file_html, end_page):
 
 
    
-# lancio un thread che inizialmente carina il meteo per la città di rimini
-# questo thread ogni 300 secondi (5 minuti) aggiorna il meteo e i relativi
+# questo thread ogni 300 secondi (5 minuti) aggiorna i 
 # contenuti delle pagine     
 def launch_thread_resfresh():
     t_refresh = threading.Thread(target=resfresh_contents())
